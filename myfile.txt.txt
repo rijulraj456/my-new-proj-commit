@@ -1,0 +1,38 @@
+#!/bin/bash
+
+# Check if Git is installed
+if ! command -v git &> /dev/null; then
+    echo "Error: Git is not installed. Please install Git and try again."
+    exit 1
+fi
+
+# Check if inside a Git repository
+if ! git rev-parse --is-inside-work-tree &> /dev/null; then
+    echo "Not a Git repository. Initializing one..."
+    git init
+    echo "Please set up the remote repository URL (e.g., git remote add origin <url>)"
+fi
+
+# Prompt for commit message
+read -p "Enter commit message: " commit_message
+if [ -z "$commit_message" ]; then
+    commit_message="Update on $(date '+%Y-%m-%d %H:%M:%S')"
+fi
+
+# Stage all changes
+git add .
+
+# Commit changes
+git commit -m "$commit_message"
+
+# Check if remote origin exists
+if git remote | grep origin &> /dev/null; then
+    # Get current branch
+    current_branch=$(git rev-parse --abbrev-ref HEAD)
+    # Push to remote
+    git push origin "$current_branch"
+    echo "Changes pushed to $current_branch on GitHub!"
+else
+    echo "No remote origin found. Please set it up with: git remote add origin <repository-url>"
+    exit 1
+fi
